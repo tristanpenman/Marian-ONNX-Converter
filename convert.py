@@ -1,16 +1,12 @@
-import os
-import warnings
-warnings.filterwarnings('ignore')
-
-import shutil
 import argparse
+import os
+import shutil
+import warnings
+
+warnings.filterwarnings('ignore')
 
 from core.utils import generate_onnx_graph
 from core.benchmark import verify_export
-
-
-PARAMS = None
-FILES = []
 
 
 def parse_args():
@@ -22,17 +18,17 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
-    outdir = os.path.join(PARAMS.output, os.path.basename(PARAMS.input))
+def main(params):
+    outdir = os.path.join(params.output, os.path.basename(params.input))
     os.makedirs(outdir, exist_ok=True)
 
     encoder_path = os.path.join(outdir, "encoder.onnx")
     decoder_path = os.path.join(outdir, "decoder.onnx")
 
-    generate_onnx_graph(PARAMS.input, encoder_path, decoder_path, outdir, quant=PARAMS.no_quantize)
+    generate_onnx_graph(params.input, encoder_path, decoder_path, outdir, quant=params.no_quantize)
 
     try:
-        verify_export(PARAMS.input, outdir)
+        verify_export(params.input, outdir)
     except Exception as e:
         print(e)
 
@@ -42,5 +38,5 @@ def main():
 
 
 if __name__ == "__main__":
-    PARAMS = parse_args()
-    main()
+    params = parse_args()
+    main(params)
