@@ -19,15 +19,12 @@ def quantize(path):
         The Path generated for the quantized
     """
     print("Quantizing...")
-
     quantize_dynamic(
         model_input=path,
         model_output=path,
         per_channel=True,
         reduce_range=True,
-        activation_type=QuantType.QUInt8,
-        weight_type=QuantType.QInt8,  # per docs, signed is faster on most CPUs
-        optimize_model=True,
-    )  # op_types_to_quantize=['MatMul', 'Relu', 'Add', 'Mul'],
-    os.remove(path[:-5] + "-opt.onnx")
+        # Note: activations will use QUint8 by default
+        weight_type=QuantType.QInt8
+    )
     print("Done")

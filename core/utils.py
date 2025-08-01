@@ -63,19 +63,18 @@ def create_marian_encoder_decoder(model_path: str, outdir: str):
 def generate_onnx_graph(model_path, encoder_path, decoder_path, outdir, quant=True):
     encoder, decoder = create_marian_encoder_decoder(model_path, outdir)
 
-    # Exemple sequence
+    # Example sequence
     tokenizer = MarianTokenizer.from_pretrained(model_path)
     inputs = tokenizer("Hello World !", return_tensors="pt")
     input_ids, attention_mask = inputs["input_ids"], inputs["attention_mask"]
 
     print("Exporting encoder to ONNX...")
-    # Exports to ONNX
-    torch.onnx._export(
+    torch.onnx.export(
         encoder,
         (input_ids, attention_mask),
         encoder_path,
         export_params=True,
-        opset_version=12,
+        opset_version=14,
         input_names=["input_ids", "attention_mask"],
         output_names=["encoder_hidden_states"],
         dynamic_axes={
@@ -89,12 +88,12 @@ def generate_onnx_graph(model_path, encoder_path, decoder_path, outdir, quant=Tr
 
     print("Exporting decoder to ONNX...")
     encoder_hidden_states = encoder(input_ids, attention_mask)[0]
-    torch.onnx._export(
+    torch.onnx.export(
         decoder,
         (input_ids, encoder_hidden_states, attention_mask),
         decoder_path,
         export_params=True,
-        opset_version=12,
+        opset_version=14,
         input_names=["input_ids", "encoder_hidden_states", "attention_mask"],
         output_names=["decoder_output"],
         dynamic_axes={
