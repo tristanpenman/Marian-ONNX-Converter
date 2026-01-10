@@ -58,8 +58,8 @@ class MarianOnnx(GenerationMixin):
         self.config = MarianConfig.from_pretrained(path)
         self.config.force_bos_token_to_be_generated = False
 
-        self.final_logits_weight = torch.load(os.path.join(path, 'lm_weight.bin')).to(self.device)
-        self.final_logits_bias = torch.load(os.path.join(path, 'lm_bias.bin')).to(self.device)
+        self.final_logits_weight = torch.load(os.path.join(path, 'lm_weight.bin'), weights_only=True).to(self.device)
+        self.final_logits_bias = torch.load(os.path.join(path, 'lm_bias.bin'), weights_only=True).to(self.device)
 
         self.logits_processor = CustomLogitsProcessor(
             2, self.config.eos_token_id, self.config.pad_token_id
