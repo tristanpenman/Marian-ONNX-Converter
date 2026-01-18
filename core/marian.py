@@ -117,34 +117,43 @@ class MarianOnnx(GenerationMixin):
             scores = self.logits_processor(input_ids, next_token_logits)
 
             next_tokens = torch.argmax(scores, dim=-1)
-            next_tokens = \
-                next_tokens * unfinished_sequences + (pad_token_id) * (1 - unfinished_sequences)
+            next_tokens = next_tokens * unfinished_sequences
+            next_tokens += pad_token_id * (1 - unfinished_sequences)
 
             input_ids = torch.cat([input_ids, next_tokens[:, None]], dim=-1)
             input_ids[input_ids[:, -2] == eos_token_id, -1] = eos_token_id
             unfinished_sequences = unfinished_sequences.mul((next_tokens != eos_token_id).char())
 
+            # Ensure inputs to the next iteration of the decoder are int32
+            input_ids = input_ids.to(torch.int32)
+
             if unfinished_sequences.max() == 0:
                 break
 
             cur_len = cur_len + 1
+
         return input_ids
 
     def _prepare_decoder_input_ids_for_generation(self, input_ids, decoder_start_token_id : int):
         decoder_input_ids = (
-            torch.ones((input_ids.shape[0], 1), dtype=torch.int64, device=input_ids.device)
+            torch.ones((input_ids.shape[0], 1), dtype=torch.int32, device=input_ids.device)
             * decoder_start_token_id
         )
         return decoder_input_ids
 
     def generate(self, input_ids, attention_mask):
-        decoder_start_token_id = self.config.decoder_start_token_id
+        # Ensure inputs to the model are int32
+        input_ids = input_ids.to(torch.int32)
+        attention_mask = attention_mask.to(torch.int32)
 
+        # Encoder pass
         encoder_output = self._encoder_forward(input_ids, attention_mask)
 
+        # Prepare for decoder pass
         input_ids = self._prepare_decoder_input_ids_for_generation(
             input_ids,
-            decoder_start_token_id=decoder_start_token_id,
+            decoder_start_token_id=self.config.decoder_start_token_id,
         )
 
+        # Decoder pass
         return self.greedy_search(input_ids, encoder_output, attention_mask)
