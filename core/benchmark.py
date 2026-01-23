@@ -16,7 +16,8 @@ def verify_export(model_path, onnx_path):
     tokenizer = MarianTokenizer.from_pretrained(model_path)
     inputs = tokenizer(["Hello world !"], return_tensors="pt")
 
-    ref_output = ref_model.generate(**inputs)
+    # Ensure beam search is disabled
+    ref_output = ref_model.generate(**inputs, num_beams=1)
     output = model.generate(**inputs)
 
     np.testing.assert_allclose(ref_output.cpu().numpy(), output, rtol=1e-3, atol=1e-3)
