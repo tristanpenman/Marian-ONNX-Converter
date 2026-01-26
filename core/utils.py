@@ -1,5 +1,6 @@
 import os
 import shutil
+import warnings
 
 import torch
 
@@ -9,6 +10,15 @@ from onnxruntime import GraphOptimizationLevel, InferenceSession, SessionOptions
 
 from core.layers import MarianDecoder, MarianEncoder
 from core.quantize import quantize
+
+
+# Suppress warnings from transformers library about install sacremoses
+warnings.filterwarnings(
+    "ignore",
+    category=UserWarning,
+    message=r".*sacremoses.*",
+    module="transformers.models.marian.tokenization_marian"
+)
 
 
 def create_model_for_provider(path: str, provider: str):
