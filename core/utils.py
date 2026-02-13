@@ -1,5 +1,4 @@
 import os
-import shutil
 import warnings
 
 import torch
@@ -31,7 +30,6 @@ def create_model_for_provider(path: str, provider: str):
     Returns:
         session: an ONNX Runtime session
     """
-
     # Few properties that might have an impact on performances
     options = SessionOptions()
     options.intra_op_num_threads = 1
@@ -54,6 +52,7 @@ def create_marian_encoder_decoder(model_path: str, outdir: str):
     Returns the MarianMTModel encoder & decoder
     """
     model = MarianMTModel.from_pretrained(model_path)
+    tokenizer = MarianTokenizer.from_pretrained(model_path)
 
     encoder = model.get_encoder()
     decoder = model.get_decoder()
@@ -64,8 +63,8 @@ def create_marian_encoder_decoder(model_path: str, outdir: str):
     torch.save(model.model.shared.weight, os.path.join(outdir, 'lm_weight.bin'))
     torch.save(model.final_logits_bias, os.path.join(outdir, 'lm_bias.bin'))
 
-    for file in ['config.json', 'source.spm', 'target.spm', 'tokenizer_config.json', 'vocab.json']:
-        shutil.copyfile(os.path.join(model_path, file), os.path.join(outdir, file))
+    model.config.save_pretrained(outdir)
+    tokenizer.save_pretrained(outdir)
 
     return marian_encoder, marian_decoder
 

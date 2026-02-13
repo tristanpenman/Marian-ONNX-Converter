@@ -72,10 +72,10 @@ class MarianOnnx(GenerationMixin):
 
     def _init_sequence_length_for_generation(self, input_ids, max_length: int):
         unfinished_sequences = \
-            torch.zeros(input_ids.shape[0], dtype=torch.int8, device=input_ids.device) + 1
+            torch.ones(input_ids.shape[0], dtype=torch.long, device=input_ids.device)
 
         sequence_lengths = \
-            torch.zeros(input_ids.shape[0], dtype=torch.int8, device=input_ids.device) + max_length
+            torch.full((input_ids.shape[0],), max_length, dtype=torch.long, device=input_ids.device)
 
         cur_len = input_ids.shape[-1]
         return sequence_lengths, unfinished_sequences, cur_len
@@ -122,7 +122,7 @@ class MarianOnnx(GenerationMixin):
 
             input_ids = torch.cat([input_ids, next_tokens[:, None]], dim=-1)
             input_ids[input_ids[:, -2] == eos_token_id, -1] = eos_token_id
-            unfinished_sequences = unfinished_sequences.mul((next_tokens != eos_token_id).char())
+            unfinished_sequences = unfinished_sequences.mul((next_tokens != eos_token_id).long())
 
             # Ensure inputs to the next iteration of the decoder are int32
             input_ids = input_ids.to(torch.int32)
