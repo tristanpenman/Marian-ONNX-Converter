@@ -15,6 +15,8 @@ def parse_args():
     parser.add_argument("-o", "--output", type=str, default="./outs", help="Output directory.")
     parser.add_argument("--no-quantize", action="store_false", default=True,
                         help="Disable model quantization.")
+    parser.add_argument("--compress-output", action="store_true", default=False,
+                        help="Create a zip archive of the converted output directory.")
     return parser.parse_args()
 
 
@@ -32,8 +34,9 @@ def main(params):
     except Exception as e:
         print(e)
 
-    print("Creating archive file...")
-    shutil.make_archive(outdir, format="zip", root_dir=outdir)
+    if params.compress_output:
+        print("Creating archive file...")
+        shutil.make_archive(outdir, format="zip", root_dir=outdir)
     print("Done.")
 
 

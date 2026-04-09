@@ -29,6 +29,12 @@ Includes a conversion script for converting from Hugging Face to ONNX. Originall
     python3 convert.py --no-quantize ./models
     ```
 
+    Optionally, create a zip archive of the converted output:
+
+    ```sh
+    python3 convert.py --compress-output ./models/fr-en
+    ```
+
     The output will be written to `./outs/fr-en`
 
 ## Testing
